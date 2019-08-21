@@ -11,6 +11,8 @@ import htcondor
 import dispatch
 
 jobhash = {
+    # This has to be a full path to work, possibly because we've turned
+    # off transferring the executable.
     "executable": "/bin/sleep",
     "arguments": "300",
     "transfer_input_files": "sweep-binary.sh",
@@ -26,6 +28,7 @@ for x in range(0, 10):
     for y in range(0, 10):
         pairs.append("{0} {1}".format(x, y))
 
+# This needs the leading './' because the sandbox isn't in the PATH.
 results = dispatch.sweep_with_job("./sweep-binary.sh", pairs, jobhash, 8)
 
 for pair in pairs:

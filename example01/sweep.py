@@ -15,6 +15,7 @@ for x in range(0, 10):
     for y in range(0, 10):
         pairs.append("{0} {1}".format(x, y))
 
+# This needs the leading './' because the sandbox isn't in the PATH.
 results = dispatch.sweep("./sweep-binary.sh", pairs, ["./sweep-binary.sh"], 8)
 
 for pair in pairs:
