@@ -11,29 +11,35 @@ import htcondor
 
 """Runs a lot of short jobs very quickly."""
 
-def dispatch(commands, files, count = 1):
+
+def dispatch(commands, files, count=1):
     """Transfers each file in files to one or more sandboxes, then runs each
        command in commands in one such sandbox."""
     jobhash = _make_default_jobhash(files)
     return dispatch_with_job(commands, jobhash, count)
 
-def dispatch_with_job(commands, jobhash, count = 1):
+
+def dispatch_with_job(commands, jobhash, count=1):
     """Submits one or more jobs to HTCondor (which may transfer files), then
        runs each command in one of the jobs."""
     return _main_select_loop(None, commands[:], jobhash, count)
 
-def sweep(command, arguments, files, count = 1):
+
+def sweep(command, arguments, files, count=1):
     """Transfers each file in files to one or more sandboxes, then runs
        command in one such sandbox once for each argument list in arguments."""
     jobhash = _make_default_jobhash(files)
     return sweep_with_job(command, arguments, jobhash, count)
 
-def sweep_with_job(command, arguments, jobhash, count = 1):
+
+def sweep_with_job(command, arguments, jobhash, count=1):
     """Submits one or more jobs to HTCondor (which may transfer files), then
        runs command in one of the jobs for each argument list in arguments."""
     return _main_select_loop(command, arguments[:], jobhash, count)
 
+
 # ----------------------------------------------------------------------------
+
 
 def _make_default_jobhash(files):
     jobhash = {
@@ -49,16 +55,20 @@ def _make_default_jobhash(files):
     jobhash["transfer_input_files"] = ",".join(files)
     return jobhash
 
+
 def _open_ssh_pipes(cluster, proc):
     ssh = subprocess.Popen(
         ["condor_ssh_to_job", "{0}.{1}".format(cluster, proc)],
-        stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+    )
     # We can't use communicate() because we need to do it more than once.
     return ssh.stdin, ssh.stdout
 
+
 def _remove_job(schedd, cluster, message):
-    schedd.act(htcondor.JobAction.Remove, "ClusterId == {0}".format(cluster),
-        message)
+    schedd.act(htcondor.JobAction.Remove, "ClusterId == {0}".format(cluster), message)
+
 
 def _main_select_loop(prefix, commands, jobhash, count):
     logfile = jobhash["log"]
@@ -80,7 +90,11 @@ def _main_select_loop(prefix, commands, jobhash, count):
             if event.cluster == cluster:
                 if event.type is htcondor.JobEventType.EXECUTE:
                     ##
-                    print("Submit-to-startup time: {0} seconds".format(time.time() - start))
+                    print(
+                        "Submit-to-startup time: {0} seconds".format(
+                            time.time() - start
+                        )
+                    )
                     to, fro = _open_ssh_pipes(cluster, event.proc)
                     pipesTo.append(to)
                     pipesFro.append(fro)
@@ -114,11 +128,12 @@ def _main_select_loop(prefix, commands, jobhash, count):
 
             if len(pipesTo) == 0 or len(pipesFro) == 0:
                 ##
-                print("Jobs complete in {0} seconds".format(time.time()-start))
+                print("Jobs complete in {0} seconds".format(time.time() - start))
                 _remove_job(schedd, cluster, "dispatch complete")
                 return results
 
         time.sleep(0.01)
+
 
 if __name__ == "__main__":
     # Tests not implemented.

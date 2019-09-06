@@ -21,7 +21,7 @@ results = dispatch.sweep("./sweep-binary.sh", pairs, ["./sweep-binary.sh"], 8)
 for pair in pairs:
     if results[pair] != pair:
         print("FAILURE: '{0}' => '{1}'".format(pair, results[pair]))
-        break;
+        break
     else:
         print("SUCCESS")
         sys.exit(0)
